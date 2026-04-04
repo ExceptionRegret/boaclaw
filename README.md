@@ -37,6 +37,33 @@ Connect [Claude Code](https://docs.anthropic.com/en/docs/claude-code) and [Facto
 | 2 | **BOA API key** | [bayofassets.com](https://bayofassets.com) |
 | 3 | **Factory AI** *(optional)* | See [Install Factory AI](#install-factory-ai-optional) below |
 
+### Install Node.js (first-time users)
+
+If you don't have Node.js installed:
+
+**Windows:**
+```powershell
+winget install OpenJS.NodeJS.LTS
+```
+
+**macOS:**
+```bash
+brew install node
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+Or download directly from [nodejs.org](https://nodejs.org). Verify with:
+
+```bash
+node -v   # should show v18+
+npm -v    # should show v9+
+```
+
 ### Install & Configure
 
 ```bash
