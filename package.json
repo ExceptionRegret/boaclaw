@@ -1,0 +1,30 @@
+{
+  "name": "boaclaw",
+  "version": "1.0.0",
+  "description": "BOA setup for Claude Code and Factory",
+  "type": "module",
+  "bin": {
+    "boaclaw": "bin/boaclaw.js"
+  },
+  "scripts": {
+    "postinstall": "node bin/postinstall.mjs"
+  },
+  "files": [
+    "bin/boaclaw.js",
+    "bin/postinstall.mjs"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "boa",
+    "bayofassets",
+    "factory",
+    "ai",
+    "llm",
+    "setup"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  }
+}
