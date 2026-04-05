@@ -74,11 +74,44 @@ if (restore) {
   log("Removing boaclaw environment variables...");
 
   if (OS === "win32") {
+    // Use PowerShell's [Environment]::SetEnvironmentVariable with $null to delete.
+    // This broadcasts WM_SETTINGCHANGE so new processes from Explorer see the change
+    // immediately (unlike `reg delete`, which silently updates the registry only).
+    const psLines = [];
     for (const key of VAR_KEYS) {
-      try { execSync(`reg delete "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment" /v "${key}" /f`, { stdio: "ignore" }); } catch {}
-      try { execSync(`reg delete "HKCU\\Environment" /v "${key}" /f`, { stdio: "ignore" }); } catch {}
-      ok(`Removed ${key}`);
+      psLines.push(
+        `try { [Environment]::SetEnvironmentVariable('${key}', $null, 'Machine') } catch {}`,
+        `try { [Environment]::SetEnvironmentVariable('${key}', $null, 'User') } catch {}`
+      );
     }
+    // Verify what's left and emit per-key status as JSON we can parse.
+    psLines.push(
+      `$keys = @(${VAR_KEYS.map(k => `'${k}'`).join(",")})`,
+      `$result = @{}`,
+      `foreach ($k in $keys) {`,
+      `  $m = [Environment]::GetEnvironmentVariable($k, 'Machine')`,
+      `  $u = [Environment]::GetEnvironmentVariable($k, 'User')`,
+      `  $result[$k] = if ($null -eq $m -and $null -eq $u) { 'removed' } else { 'present' }`,
+      `}`,
+      `$result | ConvertTo-Json -Compress`
+    );
+    let statuses = {};
+    try {
+      const output = execSync(
+        `powershell -NoProfile -ExecutionPolicy Bypass -Command "${psLines.join("; ").replace(/"/g, '\\"')}"`,
+        { stdio: ["ignore", "pipe", "ignore"] }
+      ).toString().trim();
+      statuses = JSON.parse(output);
+    } catch (e) {
+      fail("Failed to invoke PowerShell to remove env vars: " + e.message);
+      process.exit(1);
+    }
+    for (const key of VAR_KEYS) {
+      if (statuses[key] === "removed") ok(`Removed ${key}`);
+      else warn(`Could not fully remove ${key} (still present in registry — may need admin rights)`);
+    }
+    // Also clear from the current Node process so chained commands see the update.
+    for (const key of VAR_KEYS) delete process.env[key];
   } else {
     const marker    = "# --- BOA / Claude Code env ---";
     const endMarker = "# --- end BOA ---";
@@ -112,7 +145,21 @@ if (restore) {
   try { rmSync(BACKUP_FILE); } catch {}
 
   out("");
-  ok("Restore complete! Open a new terminal to apply changes.");
+  ok("Restore complete.");
+  if (OS === "win32") {
+    warn("Your CURRENT terminal still shows the old variables (Windows caches");
+    warn("each process's environment at launch). Close it and open a new one,");
+    warn("or run this in the current shell to clear them now:");
+    out("");
+    for (const k of VAR_KEYS) out(`    set ${k}=`);
+    out("");
+    try {
+      execSync(`start "" cmd /k echo boaclaw: fresh terminal - env vars cleared.`, { stdio: "ignore" });
+      ok("Opened a fresh cmd window for you.");
+    } catch {}
+  } else {
+    warn("Open a new terminal (or `source ~/.bashrc` / `source ~/.zshrc`) to apply changes.");
+  }
   out("");
   process.exit(0);
 }
@@ -220,21 +267,37 @@ const vars = {
 };
 
 if (OS === "win32") {
+  // Use PowerShell's [Environment]::SetEnvironmentVariable so WM_SETTINGCHANGE
+  // is broadcast — new terminals launched from Explorer pick up the vars
+  // without requiring a logoff. `reg add` alone does not do this.
+  const psEscape = (s) => String(s).replace(/'/g, "''");
+  const buildPs = (scope) =>
+    Object.entries(vars)
+      .map(([k, v]) => `[Environment]::SetEnvironmentVariable('${k}', '${psEscape(v)}', '${scope}')`)
+      .join("; ");
+
+  const runPs = (script) => {
+    execSync(
+      `powershell -NoProfile -ExecutionPolicy Bypass -Command "${script.replace(/"/g, '\\"')}"`,
+      { stdio: ["ignore", "ignore", "pipe"] }
+    );
+  };
+
   try {
-    for (const [k, v] of Object.entries(vars)) {
-      execSync(
-        `reg add "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager\\Environment" /v "${k}" /t REG_SZ /d "${v}" /f`,
-        { stdio: "ignore" }
-      );
-    }
-    ok("Env vars written system-wide (HKLM \u2014 all users).");
+    runPs(buildPs("Machine"));
+    ok("Env vars written system-wide (Machine scope \u2014 all users).");
   } catch {
-    warn("No admin rights \u2014 setting for current user only (HKCU).");
-    for (const [k, v] of Object.entries(vars)) {
-      execSync(`reg add "HKCU\\Environment" /v "${k}" /t REG_SZ /d "${v}" /f`, { stdio: "ignore" });
+    warn("No admin rights \u2014 setting for current user only (User scope).");
+    try {
+      runPs(buildPs("User"));
+      ok("Env vars written to User scope.");
+    } catch (e) {
+      fail("Failed to write env vars via PowerShell: " + e.message);
+      process.exit(1);
     }
-    ok("Env vars written to HKCU\\Environment.");
   }
+  // Propagate to current Node process as well.
+  for (const [k, v] of Object.entries(vars)) process.env[k] = v;
 } else {
   const marker    = "# --- BOA / Claude Code env ---";
   const endMarker = "# --- end BOA ---";
@@ -286,7 +349,18 @@ for (const [k, v] of Object.entries(vars)) {
   out(`    ${k} = ${display}`);
 }
 out("");
-ok("All done! Open a new terminal, then launch Claude Code.");
+ok("All done!");
+if (OS === "win32") {
+  warn("Your CURRENT terminal will NOT see the new variables (Windows caches");
+  warn("each process's environment at launch). Open a fresh terminal — any new");
+  warn("cmd/PowerShell launched from Explorer will have the vars set.");
+  try {
+    execSync(`start "" cmd /k echo boaclaw: fresh terminal ready - launch Claude Code here.`, { stdio: "ignore" });
+    ok("Opened a fresh cmd window for you.");
+  } catch {}
+} else {
+  out("  Open a new terminal (or source your rc file), then launch Claude Code.");
+}
 out("");
 out("  \x1b[2mTo undo: boaclaw --restore\x1b[0m");
 out("");
