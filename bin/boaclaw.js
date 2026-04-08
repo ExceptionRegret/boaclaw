@@ -216,7 +216,7 @@ if (existsSync(factoryPath)) {
 
   const newModels = [
     { model: "claude-sonnet-4-6-20250929", baseUrl: BASE_URL,        provider: "anthropic" },
-    { model: "claude-opus-4.6",            baseUrl: BASE_URL,        provider: "anthropic" },
+    { model: "claude-opus-4-6-thinking",   baseUrl: BASE_URL,        provider: "anthropic" },
     { model: "claude-haiku-4-5-20251001",  baseUrl: BASE_URL,        provider: "anthropic" },
     { model: "gemini-3.1-pro",             baseUrl: BASE_URL + "v1", provider: "openai"    },
     { model: "gemini-3-flash",             baseUrl: BASE_URL + "v1", provider: "openai"    },
@@ -263,7 +263,7 @@ const vars = {
   ANTHROPIC_AUTH_TOKEN:           key,
   ANTHROPIC_DEFAULT_HAIKU_MODEL:  "claude-haiku-4-5-20251001",
   ANTHROPIC_DEFAULT_SONNET_MODEL: "claude-sonnet-4-6-20250929",
-  ANTHROPIC_DEFAULT_OPUS_MODEL:   "claude-opus-4.6",
+  ANTHROPIC_DEFAULT_OPUS_MODEL:   "claude-opus-4-6-thinking",
 };
 
 if (OS === "win32") {
