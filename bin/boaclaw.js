@@ -215,17 +215,18 @@ if (existsSync(factoryPath)) {
   const settings = JSON.parse(raw.trim() || "{}");
 
   const newModels = [
-    { model: "claude-sonnet-4-6-20250929", baseUrl: BASE_URL,        provider: "anthropic" },
+    { model: "claude-sonnet-4-6-thinking", baseUrl: BASE_URL,        provider: "anthropic" },
     { model: "claude-opus-4-6-thinking",   baseUrl: BASE_URL,        provider: "anthropic" },
     { model: "claude-haiku-4-5-20251001",  baseUrl: BASE_URL,        provider: "anthropic" },
     { model: "gemini-3.1-pro",             baseUrl: BASE_URL + "v1", provider: "openai"    },
     { model: "gemini-3-flash",             baseUrl: BASE_URL + "v1", provider: "openai"    },
-    { model: "gpt-5.1",                    baseUrl: BASE_URL + "v1", provider: "openai"    },
-    { model: "gpt-5.1-codex",             baseUrl: BASE_URL + "v1", provider: "openai"    },
-    { model: "gpt-5.1-codex-max",         baseUrl: BASE_URL + "v1", provider: "openai"    },
+    { model: "gpt-5.4",                    baseUrl: BASE_URL + "v1", provider: "openai"    },
+    { model: "gpt-5.3-codex",              baseUrl: BASE_URL + "v1", provider: "openai"    },
     { model: "gpt-5.2",                    baseUrl: BASE_URL + "v1", provider: "openai"    },
-    { model: "gpt-5.2-codex",             baseUrl: BASE_URL + "v1", provider: "openai"    },
-    { model: "gpt-5.3-codex",             baseUrl: BASE_URL + "v1", provider: "openai"    },
+    { model: "gpt-5.2-codex",              baseUrl: BASE_URL + "v1", provider: "openai"    },
+    { model: "gpt-5.1",                    baseUrl: BASE_URL + "v1", provider: "openai"    },
+    { model: "gpt-5.1-codex",              baseUrl: BASE_URL + "v1", provider: "openai"    },
+    { model: "gpt-5.1-codex-max",          baseUrl: BASE_URL + "v1", provider: "openai"    },
   ];
 
   const existing      = settings.customModels || [];
