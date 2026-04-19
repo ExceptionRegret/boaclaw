@@ -217,7 +217,7 @@ if (existsSync(factoryPath)) {
   const newModels = [
     { model: "claude-sonnet-4-6-thinking", baseUrl: BASE_URL,        provider: "anthropic" },
     { model: "claude-opus-4-6-thinking",   baseUrl: BASE_URL,        provider: "anthropic" },
-    { model: "claude-haiku-4-5-20251001",  baseUrl: BASE_URL,        provider: "anthropic" },
+    { model: "claude-haiku-4-5",           baseUrl: BASE_URL,        provider: "anthropic" },
     { model: "gemini-3.1-pro",             baseUrl: BASE_URL + "v1", provider: "openai"    },
     { model: "gemini-3-flash",             baseUrl: BASE_URL + "v1", provider: "openai"    },
     { model: "gpt-5.4",                    baseUrl: BASE_URL + "v1", provider: "openai"    },
@@ -262,7 +262,7 @@ log("Setting environment variables system-wide...");
 const vars = {
   ANTHROPIC_BASE_URL:             BASE_URL,
   ANTHROPIC_AUTH_TOKEN:           key,
-  ANTHROPIC_DEFAULT_HAIKU_MODEL:  "claude-haiku-4-5-20251001",
+  ANTHROPIC_DEFAULT_HAIKU_MODEL:  "claude-haiku-4-5",
   ANTHROPIC_DEFAULT_SONNET_MODEL: "claude-sonnet-4-6-20250929",
   ANTHROPIC_DEFAULT_OPUS_MODEL:   "claude-opus-4-6-thinking",
 };

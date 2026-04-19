@@ -1,6 +1,6 @@
 {
   "name": "boaclaw",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "BOA setup for Claude Code and Factory",
   "type": "module",
   "bin": {
